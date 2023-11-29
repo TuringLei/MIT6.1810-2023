@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64
 sys_exit(void)
@@ -92,12 +93,32 @@ sys_uptime(void)
   return xticks;
 }
 
+/*设置进程的跟踪掩码。它从用户空间获取一个整数参数（掩码），将该掩码存储在当前进程的mask字段中，
+  用于指定要跟踪的系统调用。函数返回0表示成功执行。*/
 uint64
 sys_trace(void)
 { 
   int mask;
   argint(0, &mask);
-
   myproc()->mask = mask;
+  return 0;
+}
+
+// 参考：copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
+uint64
+sys_sysinfo(void)
+{
+  struct sysinfo info;
+  struct proc *p = myproc();
+  uint64 vir_addr;
+
+  //从第一个参数（a0），把目标虚拟地址读取出来存储在addr中
+  argaddr(0, &vir_addr);
+
+  info.freemem = free_mem();
+  info.nproc = runpro();
+
+  if (copyout(p->pagetable, vir_addr, (char *)&info, sizeof(info)) < 0)
+    return -1;
   return 0;
 }

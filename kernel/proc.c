@@ -689,3 +689,19 @@ procdump(void)
     printf("\n");
   }
 }
+
+// To collect the number of processes
+int
+runpro(void)
+{
+  int count = 0;
+  for (int i = 0; i < NPROC; ++i)
+  {
+    if(proc[i].state != UNUSED)
+    {
+      // 如果进程状态不是 UNUSED，表示这个数组元素对应的位置有一个活跃的进程
+      ++count;
+    }
+  }
+  return count;
+}
